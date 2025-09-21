@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Referral Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+</head>
+<body class="p-4">
+  <h2>Your Referral Dashboard</h2>
+  <div id="referralInfo" class="mb-4"></div>
+  <h4>Users You Referred</h4>
+  <ul id="referredUsers" class="list-group"></ul>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://exebxtduexxgckezhdky.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZWJ4dGR1ZXh4Z2NrZXpoZGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NDQ4MTYsImV4cCI6MjA3NDAyMDgxNn0.Jq6TWKe53uuBFd0ECuefyluZxRCrqaAKrp6ZJu8DSbA'
+    );
+
+    async function loadReferralData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase.from('users').select('*').eq('id', user.id).single();
+      if (profile) {
+        document.getElementById('referralInfo').innerHTML = `
+          <p><strong>Your Referral Code:</strong> ${profile.referral_code}</p>
+          <p><strongTotal Referral Earnings:</strong> ₦${profile.earnings || 0}</p>
+          <p><strongShare Link:</strong> ${window.location.origin}/?ref=${profile.referral_code}</p>
+        `;
+
+        const { data: referrals } = await supabase
+          .from('users')
+          .select('email')
+          .eq('referrer_id', user.id);
+
+        const list = document.getElementById('referredUsers');
+        referrals.forEach(r => {
+          list.innerHTML += `<li class="list-group-item">${r.email}</li>`;
+        });
+      }
+    }
+
+    loadReferralData();
+  </script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Withdrawal Requests</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+</head>
+<body class="p-4">
+  <h2>Pending Withdrawal Requests</h2>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>User Email</th>
+        <th>Requested At</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="withdrawalTable"></tbody>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://exebxtduexxgckezhdky.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZWJ4dGR1ZXh4Z2NrZXpoZGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NDQ4MTYsImV4cCI6MjA3NDAyMDgxNn0.Jq6TWKe53uuBFd0ECuefyluZxRCrqaAKrp6ZJu8DSbA'
+    );
+
+    async function loadWithdrawals() {
+      const { data: requests } = await supabase
+        .from('withdrawals')
+        .select('*')
+        .eq('status', 'Pending');
+
+      const table = document.getElementById('withdrawalTable');
+      for (const req of requests) {
+        const { data: user } = await supabase
+          .from('users')
+          .select('email')
+          .eq('id', req.user_id)
+          .single();
+
+        table.innerHTML += `
+          <tr>
+            <td>${user?.email || 'Unknown'}</td>
+            <td>${new Date(req.requested_at).toLocaleString()}</td>
+            <td>${req.status}</td>
+            <td><button class="btn btn-success btn-sm" onclick="approve('${req.id}')">Approve</button></td>
+          </tr>
+        `;
+      }
+    }
+
+    async function approve(id) {
+      await supabase.from('withdrawals').update({ status: 'Approved' }).eq('id', id);
+      alert('Withdrawal approved!');
+      location.reload();
+    }
+
+    loadWithdrawals();
+  </script>
+</body>
+</html>

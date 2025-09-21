@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Take Quiz</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <style>
+    iframe {
+      width: 100%;
+      height: 90vh;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h2>Quiz Viewer</h2>
+  <iframe id="quizFrame"></iframe>
+
+  <script>
+    const supabase = supabase.createClient(
+      'https://exebxtduexxgckezhdky.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZWJ4dGR1ZXh4Z2NrZXpoZGt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0NDQ4MTYsImV4cCI6MjA3NDAyMDgxNn0.Jq6TWKe53uuBFd0ECuefyluZxRCrqaAKrp6ZJu8DSbA'
+    );
+
+    const params = new URLSearchParams(window.location.search);
+    const fileName = params.get('file');
+
+    async function loadQuiz() {
+      const { data, error } = await supabase.storage
+        .from('quizzes')
+        .createSignedUrl(fileName, 3600); // 1-hour access
+
+      if (data?.signedUrl) {
+        document.getElementById('quizFrame').src = data.signedUrl;
+      } else {
+        document.body.innerHTML = `<p>Quiz not found. <a href="https://wa.me/234XXXXXXXXXX">Contact us on WhatsApp</a></p>`;
+      }
+    }
+
+    loadQuiz();
+  </script>
+</body>
+</html>
