@@ -1,11 +1,14 @@
-// server.js
 const express = require('express');
 const crypto = require('crypto');
+const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
 app.use(express.json());
+
+// Serve static files from the public folder
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Supabase client using service role key
 const supabase = createClient(
@@ -60,12 +63,12 @@ app.post('/paystack-webhook', async (req, res) => {
   res.sendStatus(200);
 });
 
-// Optional health check
+// Health check route
 app.get('/', (req, res) => {
   res.send('✅ Edo Quiz Hub Webhook is running');
 });
 
 // Start server
 app.listen(3000, () => {
-  console.log('✅ Webhook server running on port 3000');
+  console.log('✅ Web server running on port 3000');
 });
